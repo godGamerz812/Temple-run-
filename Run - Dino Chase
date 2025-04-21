@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sky Run - Dino Chase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    canvas { display: block; margin: auto; background: linear-gradient(#87ceeb, #ffffff); }
+    body { font-family: sans-serif; background: #000; }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');let gameSpeed = 3; let gravity = 1;
+
+const player = { x: 100, y: 300, width: 40, height: 40, dy: 0, jumping: false, jumpForce: 15, color: 'orange', };
+
+const dino = { x: 20, y: 320, width: 50, height: 50, color: 'green', };
+
+const platforms = []; const platformWidth = 100; const platformHeight = 20;
+
+function createInitialPlatforms() { for (let i = 0; i < 10; i++) { platforms.push({ x: i * (platformWidth + 30), y: 350 - Math.random() * 100, width: platformWidth, height: platformHeight }); } }
+
+function drawRect(obj) { ctx.fillStyle = obj.color || 'black'; ctx.fillRect(obj.x, obj.y, obj.width, obj.height); }
+
+function drawPlatforms() { ctx.fillStyle = '#fff'; for (let plat of platforms) { ctx.fillRect(plat.x, plat.y, plat.width, plat.height); } }
+
+function updatePlatforms() { for (let plat of platforms) { plat.x -= gameSpeed; }
+
+if (platforms[0].x + platformWidth < 0) {
+  platforms.shift();
+  platforms.push({
+    x: platforms[platforms.length - 1].x + platformWidth + 30,
+    y: 350 - Math.random() * 100,
+    width: platformWidth,
+    height: platformHeight
+  });
+}
+
+}
+
+function handlePlayer() { player.y += player.dy; player.dy += gravity;
+
+for (let plat of platforms) {
+  if (
+    player.x < plat.x + plat.width &&
+    player.x + player.width > plat.x &&
+    player.y + player.height <= plat.y + 5 &&
+    player.y + player.height + player.dy >= plat.y
+  ) {
+    player.dy = 0;
+    player.jumping = false;
+    player.y = plat.y - player.height;
+  }
+}
+
+}
+
+function handleDinoChase() { if (dino.x < player.x - 60) dino.x += 1.5; }
+
+function detectGameOver() { if (dino.x + dino.width >= player.x) { alert("Game Over! The dino caught you!"); document.location.reload(); } }
+
+function gameLoop() { ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+drawRect(player);
+drawRect(dino);
+drawPlatforms();
+
+updatePlatforms();
+handlePlayer();
+handleDinoChase();
+detectGameOver();
+
+requestAnimationFrame(gameLoop);
+
+}
+
+document.addEventListener('keydown', (e) => { if (e.code === 'Space' && !player.jumping) { player.dy = -player.jumpForce; player.jumping = true; } });
+
+createInitialPlatforms(); gameLoop(); </script>
+
+</body>
+</html>
